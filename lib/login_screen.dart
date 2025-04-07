@@ -20,19 +20,38 @@ class _LoginScreenState extends State<LoginScreen> {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+    } on FirebaseAuthException catch (e) {
+      showMessage("Login failed: ${e.message}");
     } catch (e) {
-      showMessage("Login Failed");
+      showMessage("Unexpected error: ${e.toString()}");
     }
   }
 
   Future<void> register() async {
     try {
+      final email = emailController.text.trim();
+      final password = passwordController.text.trim();
+
+      if (!email.contains("@")) {
+        showMessage("Invalid email address");
+        return;
+      }
+
+      if (password.length < 6) {
+        showMessage("Password must be at least 6 characters");
+        return;
+      }
+
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+        email: email,
+        password: password,
       );
+
+      showMessage("Registration successful!");
+    } on FirebaseAuthException catch (e) {
+      showMessage("Registration failed: ${e.message}");
     } catch (e) {
-      showMessage("Registration Failed");
+      showMessage("Unexpected error: ${e.toString()}");
     }
   }
 
@@ -44,11 +63,25 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(controller: emailController, decoration: InputDecoration(labelText: "Email")),
-            TextField(controller: passwordController, obscureText: true, decoration: InputDecoration(labelText: "Password")),
+            TextField(
+              controller: emailController,
+              decoration: InputDecoration(labelText: "Email"),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: "Password"),
+            ),
             SizedBox(height: 16),
-            ElevatedButton(onPressed: signIn, child: Text("Login")),
-            ElevatedButton(onPressed: register, child: Text("Register")),
+            ElevatedButton(
+              onPressed: signIn,
+              child: Text("Login"),
+            ),
+            ElevatedButton(
+              onPressed: register,
+              child: Text("Register"),
+            ),
           ],
         ),
       ),
